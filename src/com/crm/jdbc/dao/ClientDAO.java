@@ -1,4 +1,5 @@
 package com.crm.jdbc.dao;
+
 import com.crm.jdbc.db.DBConnection;
 import com.crm.jdbc.model.Client;
 
@@ -10,15 +11,15 @@ public class ClientDAO {
 
     public void insert(Client client) throws SQLException {
 
-        Connection conn = DBConnection.getConnection();
-
         String sql = "INSERT INTO client (name, email) VALUES (?, ?)";
 
-        PreparedStatement ps = conn.prepareStatement(sql);
-
-        ps.setString(1, client.getName());
-        ps.setString(2, client.getEmail());
-        ps.executeUpdate();
-
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setString(1, client.getName());
+            ps.setString(2, client.getEmail());
+            ps.executeUpdate();
+        }
     }
 }
