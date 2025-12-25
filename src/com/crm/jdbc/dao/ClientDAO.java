@@ -29,7 +29,6 @@ public class ClientDAO {
     public List<Client> findAll() throws SQLException {
 
         List<Client> clientes = new ArrayList<>();
-
         String sql = "SELECT name, email FROM client";
 
         try (
@@ -48,5 +47,26 @@ public class ClientDAO {
         }
 
         return clientes;
+    }
+
+    public Client findById(int id) throws SQLException {
+
+        String sql = "SELECT name, email FROM client WHERE id = ?";
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                return new Client(name, email);
+            }
+        }
+
+        return null;
     }
 }
