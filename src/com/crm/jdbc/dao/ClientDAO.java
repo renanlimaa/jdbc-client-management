@@ -63,7 +63,7 @@ public class ClientDAO {
             if (rs.next()) {
                 String name = rs.getString("name");
                 String email = rs.getString("email");
-                return new Client(name, email);
+                return new Client(id, name, email);
             }
         }
 
