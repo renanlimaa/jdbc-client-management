@@ -1,6 +1,7 @@
 package com.crm.jdbc.dao;
 
 import com.crm.jdbc.db.DBConnection;
+import com.crm.jdbc.exception.DatabaseException;
 import com.crm.jdbc.model.Client;
 
 import java.sql.Connection;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class ClientDAO {
 
-    public void insert(Client client) throws SQLException {
+    public void insert(Client client) {
         String sql = "INSERT INTO client (name, email) VALUES (?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
@@ -21,10 +22,13 @@ public class ClientDAO {
             ps.setString(1, client.getName());
             ps.setString(2, client.getEmail());
             ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Erro ao inserir cliente", e);
         }
     }
 
-    public List<Client> findAll() throws SQLException {
+    public List<Client> findAll() {
         List<Client> clientes = new ArrayList<>();
         String sql = "SELECT id, name, email FROM client";
 
@@ -34,19 +38,21 @@ public class ClientDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                int id = rs.getInt("id"); // já pega o ID também
+                int id = rs.getInt("id");
                 String name = rs.getString("name");
                 String email = rs.getString("email");
 
-                Client client = new Client(id, name, email);
-                clientes.add(client);
+                clientes.add(new Client(id, name, email));
             }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Erro ao buscar todos os clientes", e);
         }
 
         return clientes;
     }
 
-    public Client findById(int id) throws SQLException {
+    public Client findById(int id) {
         String sql = "SELECT id, name, email FROM client WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -56,18 +62,21 @@ public class ClientDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                int clientId = rs.getInt("id");
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-
-                return new Client(clientId, name, email);
+                return new Client(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email")
+                );
             }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Erro ao buscar cliente por ID", e);
         }
 
         return null;
     }
 
-    public void updateEmail(int id, String newEmail) throws SQLException {
+    public void updateEmail(int id, String newEmail) {
         String sql = "UPDATE client SET email = ? WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -76,6 +85,23 @@ public class ClientDAO {
             ps.setString(1, newEmail);
             ps.setInt(2, id);
             ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Erro ao atualizar email do cliente", e);
+        }
+    }
+
+    public void deleteById(int id) {
+        String sql = "DELETE FROM client WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Erro ao deletar cliente", e);
         }
     }
 }
